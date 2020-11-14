@@ -10,6 +10,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
@@ -25,6 +26,8 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import kotlin.jvm.Throws;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 
 import java.net.MalformedURLException;
@@ -43,25 +46,35 @@ public class NewNotifyJava {
         CIRCLE
     }
 
+    enum Durability {
+        SHORT,
+        LONG,
+        NEVER
+    }
+
     private Position pos = Position.RIGHT_BOTTOM;
-    private String title;
-    private String message = "MESSAGE";
-    private String appName = "app_name";
+    private String title = "";
+    private String message = "";
+    private String appName = "";
 
-    private Border iconBorder = Border.SQUARE;
-    private String iconPathURL;
+    private Border iconBorder = Border.CIRCLE;
+    private String iconPathURL = "";
 
-    private String textColor = "#FFFFFF";
-    private String backgroundColor = "#000000";
-    private double backgroundOpacity = 0.9;
+    private String textColorTitle = "#FFFFFF";
+    private String textColorMessage = "#b0b0b0";
+    private String backgroundColor = "#1c1c1c";
+    private double backgroundOpacity = 1;
 
-    private int waitTime = 3000;
+    private Durability waitTime = Durability.SHORT;
 
     public static class Builder {
         private final NewNotifyJava notify_config;
+        private final Stage popup = new Stage();
+        private final Stage primaryStage;
 
-        public Builder() {
+        public Builder(Stage primaryStage) {
             notify_config = new NewNotifyJava();
+            this.primaryStage = primaryStage;
         }
 
         public Builder title(String title) {
@@ -79,8 +92,13 @@ public class NewNotifyJava {
             return this;
         }
 
-        public Builder textColor(String textColor) {
-            notify_config.textColor = textColor;
+        public Builder textColorTitle(String textColor) {
+            notify_config.textColorTitle = textColor;
+            return this;
+        }
+
+        public Builder textColorMessage(String textColor) {
+            notify_config.textColorMessage = textColor;
             return this;
         }
 
@@ -110,7 +128,7 @@ public class NewNotifyJava {
         }
 
 
-        public Builder waitTime(int waiting_time) {
+        public Builder waitTime(Durability waiting_time) {
             notify_config.waitTime = waiting_time;
             return this;
         }
@@ -121,13 +139,17 @@ public class NewNotifyJava {
         double defWidth = 300.0;
         double defHeight = 140.0;
 
+        public Stage show() {
+            Rectangle2D screenRect = Screen.getPrimary().getBounds();
 
-        private Stage popup;
-        public Stage create() {
             build();
 
-            Rectangle2D screenRect = Screen.getPrimary().getBounds();
-            double shift = 10.0;
+            //height of the task bar
+            JFrame jFrame = new JFrame();
+            java.awt.Insets scnMax = Toolkit.getDefaultToolkit().getScreenInsets(jFrame.getGraphicsConfiguration());
+            int taskBarSize = scnMax.bottom;
+            //отступ от края экрана
+            double shift = 10;
 
             switch (notify_config.pos) {
                 case LEFT_TOP:
@@ -140,31 +162,36 @@ public class NewNotifyJava {
                     break;
                 case LEFT_BOTTOM:
                     popup.setX(shift);
-                    popup.setY(screenRect.getHeight() - defHeight - shift);
+                    popup.setY(screenRect.getHeight() - defHeight - taskBarSize - shift * 2);
                     break;
                 case RIGHT_BOTTOM:
                     popup.setX(screenRect.getWidth() - defWidth - shift);
-                    popup.setY(screenRect.getHeight() - defHeight - shift);
+                    popup.setY(screenRect.getHeight() - defHeight - taskBarSize - shift * 2);
                     break;
             }
 
-            @NotNull
-            Task task = new Task() {
+
+            Task<Object> task = new Task<Object>() {
                 @Override
-                //@Throws(exceptionClasses = InterruptedException.class)
                 protected Object call() throws Exception {
-                    Thread.sleep(notify_config.waitTime);
-                    cloaseAnim();
+                    if (notify_config.waitTime != Durability.NEVER) {
+                        if (notify_config.waitTime == Durability.SHORT)
+                            Thread.sleep(5000);
+                        else if (notify_config.waitTime == Durability.LONG)
+                            Thread.sleep(25000);
+                        cloaseAnim();
+                    }
                     return null;
                 }
             };
-            new Thread(task).start();
+            Thread th = new Thread(task);
+            th.start();
+
             popup.addEventFilter(MouseEvent.MOUSE_PRESSED, MouseEvent -> cloaseAnim());
 
 
             popup.setScene(new Scene(content));
-            ////// че тут ставить????
-            //popup.initOwner(primaryStage);
+            popup.initOwner(primaryStage);
             popup.initStyle(StageStyle.TRANSPARENT);
             popup.setOpacity(notify_config.backgroundOpacity);
             popup.show();
@@ -209,15 +236,15 @@ public class NewNotifyJava {
 
             Label title = new Label(notify_config.title);
             title.setFont(Font.font(24));
-            title.setStyle("-fx-font-weight: bold; -fx-text-fill:" + notify_config.textColor);
+            title.setStyle("-fx-font-weight: bold; -fx-text-fill:" + notify_config.textColorTitle);
 
             Label message = new Label(notify_config.message);
             message.setFont(Font.font(20));
-            message.setStyle("-fx-text-fill:" + notify_config.textColor);
+            message.setStyle("-fx-text-fill:" + notify_config.textColorMessage);
 
             Label app = new Label(notify_config.appName);
-            message.setFont(Font.font(16));
-            app.setStyle("-fx-text-fill:" + notify_config.textColor);
+            message.setFont(Font.font(14));
+            app.setStyle("-fx-text-fill:" + notify_config.textColorMessage);
 
             msgLayout.getChildren().addAll(title, message, app);
             content.getChildren().add(msgLayout);

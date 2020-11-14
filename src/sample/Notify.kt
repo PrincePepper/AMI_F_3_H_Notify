@@ -38,13 +38,13 @@ class Notify : Application() {
     }
 
     class Config {
-        var pos = Position.RIGHT_BOTTOM
+        var pos = Position.RIGHT_TOP
 
         var title = "TITLE"
         var msg = "MESSAGE"
         var appName = "app_name"
 
-        var iconBorder = Border.SQUARE
+        var iconBorder = Border.CIRCLE
         var iconPath = "https://softboxmarket.com/images/thumbnails/618/540/detailed/3/official-bts-wings-2nd-album-cd-poster-po_00.jpg"
 
         var textColor = "#FFFFFF"
