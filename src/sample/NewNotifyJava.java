@@ -1,6 +1,8 @@
 package sample;
 
+import com.sun.javafx.scene.control.skin.ColorPalette;
 import javafx.animation.FadeTransition;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -8,10 +10,13 @@ import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
@@ -46,6 +51,11 @@ public class NewNotifyJava {
         NEVER
     }
 
+    enum Animation {
+        TRANSPARENT,
+        DISPLAY
+    }
+
     private Position pos = Position.RIGHT_BOTTOM;
     private String title = "";
     private String message = "";
@@ -66,6 +76,8 @@ public class NewNotifyJava {
 
     private EventHandler<ActionEvent> mPositiveButtonListener;
     private EventHandler<ActionEvent> mNegativeButtonListener;
+
+    private String AddToastInputId;
 
     public static class CustomBuilder {
         private final NewNotifyJava notify_config;
@@ -138,6 +150,7 @@ public class NewNotifyJava {
             return this;
         }
 
+
         @FunctionalInterface
         public interface EventHandler extends javafx.event.EventHandler<ActionEvent> {
             /**
@@ -163,6 +176,14 @@ public class NewNotifyJava {
             return this;
         }
 
+//        interface ToastSelectionBox<DefaultSelectionBoxItemId extends String>{
+//
+//        }
+//
+//        public CustomBuilder addToastInput(final ToastSelectionBox selectionBox) {
+//            return this;
+//        }
+
         VBox content = new VBox();
         HBox content_visual = new HBox();
         VBox msgLayout = new VBox();
@@ -172,7 +193,7 @@ public class NewNotifyJava {
         double defHeightVisual = 120;
         double defHeightActions = 40;
 
-        public Stage show() {
+        public void show() {
             Rectangle2D screenRect = Screen.getPrimary().getBounds();
 
             build();
@@ -212,7 +233,7 @@ public class NewNotifyJava {
                             Thread.sleep(5000);
                         else if (notify_config.waitTime == Durability.LONG)
                             Thread.sleep(25000);
-                        cloaseAnim();
+                        closeAnim();
                     }
                     return null;
                 }
@@ -220,25 +241,26 @@ public class NewNotifyJava {
             Thread th = new Thread(task);
             th.start();
 
-            popup.setScene(new Scene(content));
+            content_actions.addEventFilter(MouseEvent.MOUSE_PRESSED, MouseEvent -> closeAnim());
+            content.addEventFilter(MouseEvent.MOUSE_ENTERED, MouseEvent -> popup.setOpacity(1));
+            content.addEventFilter(MouseEvent.MOUSE_EXITED, MouseEvent -> popup.setOpacity(notify_config.backgroundOpacity));
 
-            popup.addEventFilter(MouseEvent.MOUSE_PRESSED, MouseEvent -> cloaseAnim());
+            Scene scene = new Scene(content);
+            scene.setFill(Color.TRANSPARENT);
+            popup.setScene(scene);
             popup.setAlwaysOnTop(true);
             popup.initOwner(primaryStage);
             popup.initStyle(StageStyle.TRANSPARENT);
             popup.setOpacity(notify_config.backgroundOpacity);
             popup.show();
             openAnim();
-
-            return popup;
         }
 
         private void build() {
-
+            content.setStyle("-fx-background-color:" + notify_config.backgroundColor);
             content_visual.setPrefSize(defWidth, defHeightVisual);
             content_visual.setPadding(new Insets(5.0, 5.0, 5.0, 5.0));
             content_visual.setSpacing(10.0);
-            content_visual.setStyle("-fx-background-color:" + notify_config.backgroundColor);
 
             ImageAdd();
 
@@ -246,11 +268,9 @@ public class NewNotifyJava {
 
             content_actions.setPrefSize(defWidth, defHeightActions);
             content_actions.setPadding(new Insets(5.0, 5.0, 5.0, 5.0));
-            content_actions.setSpacing(5.0);
-            content_actions.setStyle("-fx-background-color:" + notify_config.backgroundColor);
+            content_actions.setSpacing(10.0);
 
             ButtonAdd();
-
         }
 
         private void ImageAdd() {
@@ -271,13 +291,13 @@ public class NewNotifyJava {
                 if (notify_config.iconBorder == Border.CIRCLE) {
                     iconBorderCircle = new Circle(defHeightVisual / 2,
                             defHeightVisual / 2,
-                            defHeightVisual / 3);
+                            defHeightVisual / 4);
                     iconBorderCircle.setFill(new ImagePattern(backgroundImage, 1, 1, 1, 1, true));
                     content_visual.getChildren().add(iconBorderCircle);
                 } else {
                     iconBorderRectangle = new Rectangle(0, 0,
-                            defHeightVisual / 1.5,
-                            defHeightVisual / 1.5);
+                            defHeightVisual / 2,
+                            defHeightVisual / 2);
                     iconBorderRectangle.setFill(new ImagePattern(backgroundImage, 0, 0, 1, 1, true));
                     content_visual.getChildren().add(iconBorderRectangle);
                 }
@@ -324,15 +344,14 @@ public class NewNotifyJava {
         }
 
         private void openAnim() {
-            FadeTransition ft = new FadeTransition(Duration.millis(500), content);
+            FadeTransition ft = new FadeTransition(Duration.millis(1500), content);
             ft.setFromValue(0);
-            ft.setToValue(notify_config.backgroundOpacity);
-            ft.setCycleCount(1);
+            ft.setToValue(1);
             ft.play();
         }
 
-        private void cloaseAnim() {
-            FadeTransition ft = new FadeTransition(Duration.millis(500), content);
+        private void closeAnim() {
+            FadeTransition ft = new FadeTransition(Duration.millis(1500), content);
             ft.setFromValue(notify_config.backgroundOpacity);
             ft.setToValue(0);
             ft.setCycleCount(1);
@@ -341,7 +360,6 @@ public class NewNotifyJava {
                 popup.close();
             });
             ft.play();
-
         }
 
     }

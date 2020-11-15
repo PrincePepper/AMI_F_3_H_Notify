@@ -52,7 +52,7 @@ class Notify : Application() {
         var bgColor = "#000000"
         var bgOpacity = 0.9
 
-        var waitTime = 3000
+        var waitTime = 100000
     }
 
     var defWwidth = 300.0
