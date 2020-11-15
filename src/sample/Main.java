@@ -7,13 +7,19 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        NewNotifyJava.Builder notifyJava = new NewNotifyJava.Builder(primaryStage);
+        NewNotifyJava.CustomBuilder notifyJava = new NewNotifyJava.CustomBuilder(primaryStage);
         notifyJava.title("Jane")
                 .message("Doe")
                 .appName("test")
-                .position(NewNotifyJava.Position.RIGHT_TOP)
+                .addAttributionText("Vue SMS")
+                .iconBorder(NewNotifyJava.Border.SQUARE)
+                .position(NewNotifyJava.Position.RIGHT_BOTTOM)
+                .waitTime(NewNotifyJava.Durability.NEVER)
+                .setPositiveButton("AGREE", event -> System.out.println("positive"))
+                .setNegativeButton("CANCEL", event -> System.out.println("negative"))
                 .iconPathURL("https://softboxmarket.com/images/thumbnails/618/540/detailed/3/official-bts-wings-2nd-album-cd-poster-po_00.jpg")
                 .show();
+
     }
 
 

@@ -1,21 +1,17 @@
 package sample;
 
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
 import javafx.animation.FadeTransition;
-import javafx.application.Application;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
-import javafx.scene.chart.BarChart;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
@@ -24,12 +20,10 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
-import kotlin.jvm.Throws;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-
 import java.net.MalformedURLException;
 
 public class NewNotifyJava {
@@ -56,7 +50,7 @@ public class NewNotifyJava {
     private String title = "";
     private String message = "";
     private String appName = "";
-
+    private String attributiontext = "";
     private Border iconBorder = Border.CIRCLE;
     private String iconPathURL = "";
 
@@ -67,77 +61,116 @@ public class NewNotifyJava {
 
     private Durability waitTime = Durability.SHORT;
 
-    public static class Builder {
+    private String mPositiveButtonText = "";
+    private String mNegativeButtonText = "";
+
+    private EventHandler<ActionEvent> mPositiveButtonListener;
+    private EventHandler<ActionEvent> mNegativeButtonListener;
+
+    public static class CustomBuilder {
         private final NewNotifyJava notify_config;
         private final Stage popup = new Stage();
         private final Stage primaryStage;
 
-        public Builder(Stage primaryStage) {
+        public CustomBuilder(Stage primaryStage) {
             notify_config = new NewNotifyJava();
             this.primaryStage = primaryStage;
         }
 
-        public Builder title(String title) {
+        public CustomBuilder title(String title) {
             notify_config.title = title;
             return this;
         }
 
-        public Builder message(String message) {
+        public CustomBuilder message(String message) {
             notify_config.message = message;
             return this;
         }
 
-        public Builder appName(String app_name) {
+        public CustomBuilder appName(String app_name) {
             notify_config.appName = app_name;
             return this;
         }
 
-        public Builder textColorTitle(String textColor) {
+        public CustomBuilder addAttributionText(String attribution_name) {
+            notify_config.attributiontext = " • " + attribution_name;
+            return this;
+        }
+
+        public CustomBuilder textColorTitle(String textColor) {
             notify_config.textColorTitle = textColor;
             return this;
         }
 
-        public Builder textColorMessage(String textColor) {
+        public CustomBuilder textColorMessage(String textColor) {
             notify_config.textColorMessage = textColor;
             return this;
         }
 
-        public Builder backgroundColor(String backgroundColor) {
+        public CustomBuilder backgroundColor(String backgroundColor) {
             notify_config.backgroundColor = backgroundColor;
             return this;
         }
 
-        public Builder backgroundOpacity(double backgroundOpacity) {
+        public CustomBuilder backgroundOpacity(double backgroundOpacity) {
             notify_config.backgroundOpacity = backgroundOpacity;
             return this;
         }
 
-        public Builder position(Position pos) {
+        public CustomBuilder position(Position pos) {
             notify_config.pos = pos;
             return this;
         }
 
-        public Builder iconBorder(Border border) {
+        public CustomBuilder iconBorder(Border border) {
             notify_config.iconBorder = border;
             return this;
         }
 
-        public Builder iconPathURL(String iconPathURL) {
+        public CustomBuilder iconPathURL(String iconPathURL) {
             notify_config.iconPathURL = iconPathURL;
             return this;
         }
 
 
-        public Builder waitTime(Durability waiting_time) {
+        public CustomBuilder waitTime(Durability waiting_time) {
             notify_config.waitTime = waiting_time;
             return this;
         }
 
-        HBox content = new HBox();
-        VBox msgLayout = new VBox();
+        @FunctionalInterface
+        public interface EventHandler extends javafx.event.EventHandler<ActionEvent> {
+            /**
+             * Invoked when a specific event of the type for which this handler is
+             * registered happens.
+             *
+             * @param event the event which occurred
+             */
+            @Override
+            void handle(ActionEvent event);
+        }
 
-        double defWidth = 300.0;
-        double defHeight = 140.0;
+
+        public CustomBuilder setPositiveButton(String name, final EventHandler listener) {
+            notify_config.mPositiveButtonText = name;
+            notify_config.mPositiveButtonListener = listener;
+            return this;
+        }
+
+        public CustomBuilder setNegativeButton(String name, final EventHandler listener) {
+            notify_config.mNegativeButtonText = name;
+            notify_config.mNegativeButtonListener = listener;
+            return this;
+        }
+
+        VBox content = new VBox();
+        HBox content_visual = new HBox();
+        VBox msgLayout = new VBox();
+        HBox content_actions = new HBox();
+
+        double defWidth = 350;
+        double defHeightVisual = 120;
+        double defHeightActions = 40;
 
         public Stage show() {
             Rectangle2D screenRect = Screen.getPrimary().getBounds();
@@ -162,11 +195,11 @@ public class NewNotifyJava {
                     break;
                 case LEFT_BOTTOM:
                     popup.setX(shift);
-                    popup.setY(screenRect.getHeight() - defHeight - taskBarSize - shift * 2);
+                    popup.setY(screenRect.getHeight() - defHeightVisual - defHeightActions - taskBarSize - shift * 2);
                     break;
                 case RIGHT_BOTTOM:
                     popup.setX(screenRect.getWidth() - defWidth - shift);
-                    popup.setY(screenRect.getHeight() - defHeight - taskBarSize - shift * 2);
+                    popup.setY(screenRect.getHeight() - defHeightVisual - defHeightActions - taskBarSize - shift * 2);
                     break;
             }
 
@@ -187,24 +220,40 @@ public class NewNotifyJava {
             Thread th = new Thread(task);
             th.start();
 
-            popup.addEventFilter(MouseEvent.MOUSE_PRESSED, MouseEvent -> cloaseAnim());
-
-
             popup.setScene(new Scene(content));
+
+            popup.addEventFilter(MouseEvent.MOUSE_PRESSED, MouseEvent -> cloaseAnim());
+            popup.setAlwaysOnTop(true);
             popup.initOwner(primaryStage);
             popup.initStyle(StageStyle.TRANSPARENT);
             popup.setOpacity(notify_config.backgroundOpacity);
             popup.show();
             openAnim();
+
             return popup;
         }
 
         private void build() {
-            content.setPrefSize(defWidth, defHeight);
-            content.setPadding(new Insets(5.0, 5.0, 5.0, 5.0));
-            content.setSpacing(10.0);
-            content.setStyle("-fx-background-color:" + notify_config.backgroundColor);
 
+            content_visual.setPrefSize(defWidth, defHeightVisual);
+            content_visual.setPadding(new Insets(5.0, 5.0, 5.0, 5.0));
+            content_visual.setSpacing(10.0);
+            content_visual.setStyle("-fx-background-color:" + notify_config.backgroundColor);
+
+            ImageAdd();
+
+            LabelAdd();
+
+            content_actions.setPrefSize(defWidth, defHeightActions);
+            content_actions.setPadding(new Insets(5.0, 5.0, 5.0, 5.0));
+            content_actions.setSpacing(5.0);
+            content_actions.setStyle("-fx-background-color:" + notify_config.backgroundColor);
+
+            ButtonAdd();
+
+        }
+
+        private void ImageAdd() {
             String path = notify_config.iconPathURL;
 
             if (!notify_config.iconPathURL.isEmpty()) {
@@ -217,23 +266,25 @@ public class NewNotifyJava {
                 }
                 Circle iconBorderCircle;
                 Rectangle iconBorderRectangle;
+                Image backgroundImage = new Image(path);
+
                 if (notify_config.iconBorder == Border.CIRCLE) {
-                    iconBorderCircle = new Circle(defHeight / 2,
-                            defHeight / 2,
-                            defHeight / 2);
-                    iconBorderCircle.setFill(new ImagePattern(new Image(path)));
-                    content.getChildren().add(iconBorderCircle);
+                    iconBorderCircle = new Circle(defHeightVisual / 2,
+                            defHeightVisual / 2,
+                            defHeightVisual / 3);
+                    iconBorderCircle.setFill(new ImagePattern(backgroundImage, 1, 1, 1, 1, true));
+                    content_visual.getChildren().add(iconBorderCircle);
                 } else {
-                    iconBorderRectangle = new Rectangle(defHeight / 2,
-                            defHeight / 2,
-                            defWidth,
-                            defHeight);
-                    iconBorderRectangle.setFill(new ImagePattern(new Image(path)));
-                    content.getChildren().add(iconBorderRectangle);
+                    iconBorderRectangle = new Rectangle(0, 0,
+                            defHeightVisual / 1.5,
+                            defHeightVisual / 1.5);
+                    iconBorderRectangle.setFill(new ImagePattern(backgroundImage, 0, 0, 1, 1, true));
+                    content_visual.getChildren().add(iconBorderRectangle);
                 }
             }
+        }
 
-
+        private void LabelAdd() {
             Label title = new Label(notify_config.title);
             title.setFont(Font.font(24));
             title.setStyle("-fx-font-weight: bold; -fx-text-fill:" + notify_config.textColorTitle);
@@ -242,16 +293,38 @@ public class NewNotifyJava {
             message.setFont(Font.font(20));
             message.setStyle("-fx-text-fill:" + notify_config.textColorMessage);
 
-            Label app = new Label(notify_config.appName);
-            message.setFont(Font.font(14));
+            Label app = new Label(notify_config.appName + notify_config.attributiontext);
+            app.setFont(Font.font(14));
             app.setStyle("-fx-text-fill:" + notify_config.textColorMessage);
 
             msgLayout.getChildren().addAll(title, message, app);
-            content.getChildren().add(msgLayout);
+            content_visual.getChildren().add(msgLayout);
+            content.getChildren().add(content_visual);
+        }
+
+        private void ButtonAdd() {
+            if (notify_config.mPositiveButtonListener != null) {
+                Button mPositiveButton = new Button(notify_config.mPositiveButtonText);
+                mPositiveButton.setPrefSize(content_actions.getPrefWidth(), content_actions.getMaxWidth());
+                mPositiveButton.setStyle("-fx-font-weight: bold; -fx-background-color: #626262; -fx-text-fill: white");
+                mPositiveButton.setOnAction(notify_config.mPositiveButtonListener);
+
+                content_actions.getChildren().add(mPositiveButton);
+            }
+
+            if (notify_config.mNegativeButtonListener != null) {
+                Button mNegativeButton = new Button(notify_config.mNegativeButtonText);
+                mNegativeButton.setPrefSize(content_actions.getPrefWidth(), content_actions.getMaxWidth());
+                mNegativeButton.setStyle("-fx-font-weight: bold; -fx-background-color: #626262; -fx-text-fill: white");
+                mNegativeButton.setOnAction(notify_config.mNegativeButtonListener);
+
+                content_actions.getChildren().add(mNegativeButton);
+            }
+            content.getChildren().add(content_actions);
         }
 
         private void openAnim() {
-            FadeTransition ft = new FadeTransition(Duration.millis(1500.0), content);
+            FadeTransition ft = new FadeTransition(Duration.millis(500), content);
             ft.setFromValue(0);
             ft.setToValue(notify_config.backgroundOpacity);
             ft.setCycleCount(1);
@@ -259,7 +332,7 @@ public class NewNotifyJava {
         }
 
         private void cloaseAnim() {
-            FadeTransition ft = new FadeTransition(Duration.millis(1500.0), content);
+            FadeTransition ft = new FadeTransition(Duration.millis(500), content);
             ft.setFromValue(notify_config.backgroundOpacity);
             ft.setToValue(0);
             ft.setCycleCount(1);
