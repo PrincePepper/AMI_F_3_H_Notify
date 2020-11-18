@@ -1,18 +1,17 @@
 package sample;
 
-import com.sun.javafx.scene.control.skin.ColorPalette;
 import javafx.animation.FadeTransition;
-import javafx.collections.ObservableList;
+import javafx.animation.TranslateTransition;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.PasswordField;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
@@ -63,6 +62,8 @@ public class NewNotifyJava {
     private String attributiontext = "";
     private Border iconBorder = Border.CIRCLE;
     private String iconPathURL = "";
+    private boolean changeTransition = false;
+
 
     private String textColorTitle = "#FFFFFF";
     private String textColorMessage = "#b0b0b0";
@@ -70,6 +71,9 @@ public class NewNotifyJava {
     private double backgroundOpacity = 1;
 
     private Durability waitTime = Durability.SHORT;
+
+    private String typeText = "";
+    private String backgroundText = "";
 
     private String mPositiveButtonText = "";
     private String mNegativeButtonText = "";
@@ -83,6 +87,17 @@ public class NewNotifyJava {
         private final NewNotifyJava notify_config;
         private final Stage popup = new Stage();
         private final Stage primaryStage;
+
+        VBox content = new VBox();
+        HBox content_visual = new HBox();
+        VBox msgLayout = new VBox();
+        HBox content_actions = new HBox();
+
+        double defWidth = 350;
+        double defHeightVisual = 100;
+        double defHeightTextField = 40;
+        double defHeightSpinner = 40;
+        double defHeightActions = 40;
 
         public CustomBuilder(Stage primaryStage) {
             notify_config = new NewNotifyJava();
@@ -150,6 +165,18 @@ public class NewNotifyJava {
             return this;
         }
 
+        public CustomBuilder changeTransition(boolean change_transition) {
+            notify_config.changeTransition = change_transition;
+            return this;
+        }
+
+
+        public CustomBuilder addInputTextBox(String type_text, String back_text) {
+            notify_config.typeText = type_text;
+            notify_config.backgroundText = back_text;
+            return this;
+        }
+
 
         @FunctionalInterface
         public interface EventHandler extends javafx.event.EventHandler<ActionEvent> {
@@ -161,6 +188,7 @@ public class NewNotifyJava {
              */
             @Override
             void handle(ActionEvent event);
+
         }
 
 
@@ -184,14 +212,6 @@ public class NewNotifyJava {
 //            return this;
 //        }
 
-        VBox content = new VBox();
-        HBox content_visual = new HBox();
-        VBox msgLayout = new VBox();
-        HBox content_actions = new HBox();
-
-        double defWidth = 350;
-        double defHeightVisual = 120;
-        double defHeightActions = 40;
 
         public void show() {
             Rectangle2D screenRect = Screen.getPrimary().getBounds();
@@ -233,7 +253,7 @@ public class NewNotifyJava {
                             Thread.sleep(5000);
                         else if (notify_config.waitTime == Durability.LONG)
                             Thread.sleep(25000);
-                        closeAnim();
+                        closeAnim(notify_config.changeTransition);
                     }
                     return null;
                 }
@@ -241,7 +261,7 @@ public class NewNotifyJava {
             Thread th = new Thread(task);
             th.start();
 
-            content_actions.addEventFilter(MouseEvent.MOUSE_PRESSED, MouseEvent -> closeAnim());
+            content_actions.addEventFilter(MouseEvent.MOUSE_PRESSED, MouseEvent -> closeAnim(notify_config.changeTransition));
             content.addEventFilter(MouseEvent.MOUSE_ENTERED, MouseEvent -> popup.setOpacity(1));
             content.addEventFilter(MouseEvent.MOUSE_EXITED, MouseEvent -> popup.setOpacity(notify_config.backgroundOpacity));
 
@@ -253,7 +273,7 @@ public class NewNotifyJava {
             popup.initStyle(StageStyle.TRANSPARENT);
             popup.setOpacity(notify_config.backgroundOpacity);
             popup.show();
-            openAnim();
+            openAnim(notify_config.changeTransition);
         }
 
         private void build() {
@@ -266,9 +286,10 @@ public class NewNotifyJava {
 
             LabelAdd();
 
-            content_actions.setPrefSize(defWidth, defHeightActions);
+            content_actions.setPrefSize(defWidth, 0);
             content_actions.setPadding(new Insets(5.0, 5.0, 5.0, 5.0));
             content_actions.setSpacing(10.0);
+            textFieldAdd();
 
             ButtonAdd();
         }
@@ -322,6 +343,21 @@ public class NewNotifyJava {
             content.getChildren().add(content_visual);
         }
 
+
+        private void textFieldAdd() {
+            if (notify_config.typeText.equals("pswd")) {
+                PasswordField textPassword = new PasswordField();
+                textPassword.setPrefSize(content.getPrefWidth(), content.getMaxWidth());
+                textPassword.setPadding(new Insets(5.0, 5.0, 5.0, 5.0));
+                textPassword.setAccessibleText(notify_config.backgroundText);
+                content.getChildren().add(textPassword);
+            } else {
+                TextField textField = new TextField();
+                textField.setColumns(11);
+            }
+
+        }
+
         private void ButtonAdd() {
             if (notify_config.mPositiveButtonListener != null) {
                 Button mPositiveButton = new Button(notify_config.mPositiveButtonText);
@@ -343,23 +379,52 @@ public class NewNotifyJava {
             content.getChildren().add(content_actions);
         }
 
-        private void openAnim() {
-            FadeTransition ft = new FadeTransition(Duration.millis(1500), content);
-            ft.setFromValue(0);
-            ft.setToValue(1);
-            ft.play();
+        private void openAnim(boolean transition) {
+            if (transition) {
+                TranslateTransition tt = new TranslateTransition(Duration.millis(600), content);
+                if (notify_config.pos == Position.RIGHT_BOTTOM || notify_config.pos == Position.RIGHT_TOP) {
+                    tt.setByX(-defWidth);
+                    tt.setFromX(defWidth);
+                } else {
+                    tt.setByX(defWidth);
+                    tt.setFromX(-defWidth);
+                }
+                tt.play();
+            } else {
+                FadeTransition ft = new FadeTransition(Duration.millis(1500), content);
+                ft.setFromValue(0);
+                ft.setToValue(1);
+                ft.play();
+            }
+
         }
 
-        private void closeAnim() {
-            FadeTransition ft = new FadeTransition(Duration.millis(1500), content);
-            ft.setFromValue(notify_config.backgroundOpacity);
-            ft.setToValue(0);
-            ft.setCycleCount(1);
-            ft.setOnFinished(event -> {
-                System.out.println("close");
-                popup.close();
-            });
-            ft.play();
+        private void closeAnim(boolean transition) {
+            if (transition) {
+                TranslateTransition tt = new TranslateTransition(Duration.millis(600), content);
+                if (notify_config.pos == Position.RIGHT_BOTTOM || notify_config.pos == Position.RIGHT_TOP) {
+                    tt.setByX(defWidth);
+                } else {
+                    tt.setByX(-defWidth);
+
+                }
+                tt.setOnFinished(event -> {
+                    System.out.println("close");
+                    popup.close();
+                });
+                tt.play();
+            } else {
+                FadeTransition ft = new FadeTransition(Duration.millis(1500), content);
+                ft.setFromValue(notify_config.backgroundOpacity);
+                ft.setToValue(0);
+                ft.setCycleCount(1);
+                ft.setOnFinished(event -> {
+                    System.out.println("close");
+                    popup.close();
+                });
+                ft.play();
+            }
+
         }
 
     }
