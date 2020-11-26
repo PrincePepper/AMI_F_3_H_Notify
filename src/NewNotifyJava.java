@@ -1,5 +1,3 @@
-package sample;
-
 import javafx.animation.FadeTransition;
 import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
@@ -70,7 +68,6 @@ public class NewNotifyJava {
     private Border iconBorder = Border.CIRCLE;
     private String iconPathURL = "";
     private boolean changeTransition = false;
-
 
     private String textColorTitle = "#FFFFFF";
     private String textColorMessage = "#b0b0b0";
@@ -350,7 +347,6 @@ public class NewNotifyJava {
             VBox temp = new VBox();
             if (main_text == null)
                 main_text = arrayListComboBox.get(0);
-//            ObservableList<String> type = FXCollections.observableArrayList(arrayListComboBox);
             final ComboBox<String> pullBox = new ComboBox<>();
             pullBox.getItems().addAll(arrayListComboBox);
             pullBox.setVisibleRowCount(5);
@@ -382,8 +378,6 @@ public class NewNotifyJava {
                 mNegativeButton.setOnAction(notify_config.mNegativeButtonListener);
                 content_actions.getChildren().add(mNegativeButton);
             }
-
-
             content.getChildren().add(content_actions);
         }
 

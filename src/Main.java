@@ -1,5 +1,3 @@
-package sample;
-
 import javafx.application.Application;
 import javafx.stage.Stage;
 
@@ -16,7 +14,7 @@ public class Main extends Application {
                 .position(NewNotifyJava.Position.RIGHT_BOTTOM)
                 .waitTime(NewNotifyJava.Durability.NEVER)
                 .backgroundOpacity(1)
-//                .addInputTextBox("pswd", "test2123")
+                .addInputTextBox("pswd", "test2123")
                 .setComboBox("second", "first", "second", "third", "four", "five", "six")
                 .setPositiveButton("AGREE", event -> {
                 })

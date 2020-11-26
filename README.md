@@ -1,2 +1,2 @@
-# AMI_F_3_H_Notify
-Toast библиотека
+# Notify Windows
+:email: Notify library to show windows toast

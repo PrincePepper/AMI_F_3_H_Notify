@@ -1,5 +1,3 @@
-package sample
-
 import javafx.animation.FadeTransition
 import javafx.application.Application
 import javafx.concurrent.Task
@@ -132,14 +130,14 @@ class Notify : Application() {
 
     fun build() {
         content.setPrefSize(defWwidth, defHeight)
-        content.setPadding(Insets(5.0, 5.0, 5.0, 5.0))
+        content.padding = Insets(5.0, 5.0, 5.0, 5.0)
         content.spacing = 10.0
         content.style = "-fx-background-color:" + config.bgColor
 
         var path = config.iconPath
         if (!config.iconPath.isEmpty()) {
             if (config.iconPath.substring(0, 4) != "http") {
-                path = File(config.iconPath).toURI().toURL().toString();
+                path = File(config.iconPath).toURI().toURL().toString()
             }
 
             var icoBorder = if (config.iconBorder == Border.CIRCLE) {
@@ -147,7 +145,7 @@ class Notify : Application() {
             } else {
                 Rectangle(defHeight / 2, defHeight / 2, defHeight, defHeight)
             }
-            icoBorder.setFill(ImagePattern(Image(path)))
+            icoBorder.fill = ImagePattern(Image(path))
             content.children.add(icoBorder)
         }
 
