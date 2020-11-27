@@ -1,5 +1,7 @@
 import javafx.animation.FadeTransition;
 import javafx.animation.TranslateTransition;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -11,13 +13,15 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
@@ -37,167 +41,267 @@ import java.util.Collections;
 
 public class NewNotifyJava {
 
-    enum Position {
+    private final String title;
+    private final String message;
+    private final String appName;
+    private final String attributiontext;
+    private final String iconPathURL;
+    private final String textColorTitle;
+    private final String textColorMessage;
+    private final String backgroundColor;
+    private final double backgroundOpacity;
+    private final String musicPathURL;
+
+    public NewNotifyJava(Builder builder) {
+        this.title = builder.title;
+        this.message = builder.message;
+        this.appName = builder.appName;
+        this.attributiontext = builder.attributiontext;
+        this.iconPathURL = builder.iconPathURL;
+        this.textColorTitle = builder.textColorTitle;
+        this.textColorMessage = builder.textColorMessage;
+        this.backgroundColor = builder.backgroundColor;
+        this.backgroundOpacity = builder.backgroundOpacity;
+        this.musicPathURL = builder.musicPathURL;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public String getAttributiontext() {
+        return attributiontext;
+    }
+
+    public String getIconPathURL() {
+        return iconPathURL;
+    }
+
+    public String getTextColorTitle() {
+        return textColorTitle;
+    }
+
+    public String getTextColorMessage() {
+        return textColorMessage;
+    }
+
+    public String getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    public double getBackgroundOpacity() {
+        return backgroundOpacity;
+    }
+
+    public enum Position {
         RIGHT_BOTTOM,
         RIGHT_TOP,
         LEFT_BOTTOM,
         LEFT_TOP
     }
 
-    enum Border {
+    public enum Border {
         SQUARE,
         CIRCLE
     }
 
-    enum Durability {
+    public enum Durability {
         SHORT,
         LONG,
         NEVER
     }
 
-    enum Animation {
+    public enum Animation {
         TRANSPARENT,
         DISPLAY
     }
 
-    private Position pos = Position.RIGHT_BOTTOM;
-    private String title;
-    private String message;
-    private String appName;
-    private String attributiontext;
-    private Border iconBorder = Border.CIRCLE;
-    private String iconPathURL = "";
-    private boolean changeTransition = false;
-
-    private String textColorTitle = "#FFFFFF";
-    private String textColorMessage = "#b0b0b0";
-    private String backgroundColor = "#1c1c1c";
-    private double backgroundOpacity = 1;
-
-    private Durability waitTime = Durability.SHORT;
-
-    private String typeText_TextInput = "";
-    private String backgroundText_TextInput = "";
-
-    private String mPositiveButtonText;
-    private String mNegativeButtonText;
-
-    private EventHandler<ActionEvent> mPositiveButtonListener;
-    private EventHandler<ActionEvent> mNegativeButtonListener;
-
-    public static class CustomBuilder {
-        private final NewNotifyJava notify_config;
+    public static class Builder {
+        private static final ArrayList<String> arrayListComboBox = new ArrayList<>();
+        final ComboBox<String> pullBox = new ComboBox<>();
         private final Stage popup = new Stage();
         private final Stage primaryStage;
-
-        private static final ArrayList<String> arrayListComboBox = new ArrayList<>();
         private final VBox content = new VBox();
         private final HBox content_visual = new HBox();
         private final VBox msgLayout = new VBox();
+        private final VBox content_input = new VBox();
         private final HBox content_actions = new HBox();
+
         private final double defWidth = 350;
+
+        private final String musicPathURL = "https://wav-library.net/sounds/0-0-1-17216-20";
+
+        TextField textField = new TextField();
+        private String newValueTextField;
+        private Position pos = Position.RIGHT_BOTTOM;
+        private String title;
+        private String message;
+        private String appName;
+        private String attributiontext;
+        private Border iconBorder = Border.CIRCLE;
+        private String iconPathURL = "";
+        private Animation changeTransition = Animation.TRANSPARENT;
+        private String textColorTitle = "#FFFFFF";
+        private String textColorMessage = "#b0b0b0";
+        private String backgroundColor = "#1c1c1c";
+        private double backgroundOpacity = 1;
+        private Durability waitTime = Durability.SHORT;
+        private Boolean addInputTextBox = false;
+        private String mPositiveButtonText;
+        private String mNegativeButtonText;
+        private EventHandler<ActionEvent> positiveButtonListener;
+        private EventHandler<ActionEvent> negativeButtonListener;
         private String main_text;
 
-
-        public CustomBuilder(Stage primaryStage) {
-            notify_config = new NewNotifyJava();
+        public Builder(Stage primaryStage) {
             this.primaryStage = primaryStage;
         }
 
-        public CustomBuilder title(String title) {
-            notify_config.title = title;
+        public Builder title(String title) {
+            this.title = title;
             return this;
         }
 
-        public CustomBuilder message(String message) {
-            notify_config.message = message;
+        public Builder message(String message) {
+            this.message = message;
             return this;
         }
 
-        public CustomBuilder appName(String app_name) {
-            notify_config.appName = app_name;
+        public Builder appName(String app_name) {
+            this.appName = app_name;
             return this;
         }
 
-        public CustomBuilder addAttributionText(String attribution_name) {
-            notify_config.attributiontext = " • " + attribution_name;
+        public Builder addAttributionText(String attribution_name) {
+            this.attributiontext = " • " + attribution_name;
             return this;
         }
 
-        public CustomBuilder textColorTitle(String textColor) {
-            notify_config.textColorTitle = textColor;
+        public Builder textColorTitle(String textColor) {
+            this.textColorTitle = textColor;
             return this;
         }
 
-        public CustomBuilder textColorMessage(String textColor) {
-            notify_config.textColorMessage = textColor;
+        public Builder textColorMessage(String textColor) {
+            this.textColorMessage = textColor;
             return this;
         }
 
-        public CustomBuilder backgroundColor(String backgroundColor) {
-            notify_config.backgroundColor = backgroundColor;
+        public Builder backgroundColor(String backgroundColor) {
+            this.backgroundColor = backgroundColor;
             return this;
         }
 
-        public CustomBuilder backgroundOpacity(double backgroundOpacity) {
-            notify_config.backgroundOpacity = backgroundOpacity;
+        public Builder backgroundOpacity(double backgroundOpacity) {
+            this.backgroundOpacity = backgroundOpacity;
             return this;
         }
 
-        public CustomBuilder position(Position pos) {
-            notify_config.pos = pos;
+        public Builder position(Position pos) {
+            this.pos = pos;
             return this;
         }
 
-        public CustomBuilder iconBorder(Border border) {
-            notify_config.iconBorder = border;
+        public Builder iconBorder(Border border) {
+            this.iconBorder = border;
             return this;
         }
 
-        public CustomBuilder iconPathURL(String iconPathURL) {
-            notify_config.iconPathURL = iconPathURL;
+        public Builder iconPathURL(String iconPathURL) {
+            this.iconPathURL = iconPathURL;
             return this;
         }
 
-
-        public CustomBuilder waitTime(Durability waiting_time) {
-            notify_config.waitTime = waiting_time;
+        public Builder waitTime(Durability waiting_time) {
+            this.waitTime = waiting_time;
             return this;
         }
 
-        public CustomBuilder changeTransition(boolean change_transition) {
-            notify_config.changeTransition = change_transition;
+        public Builder changeTransition(Animation change_transition) {
+            this.changeTransition = change_transition;
             return this;
         }
 
-        public CustomBuilder addInputTextBox(String type_text, String back_text) {
-            notify_config.typeText_TextInput = type_text;
-            notify_config.backgroundText_TextInput = back_text;
+        public Builder addInputTextBox() {
+            this.addInputTextBox = true;
             return this;
         }
 
-        public CustomBuilder setComboBox(String maintext, String... var) {
+        public Builder setComboBox(String maintext, String... var) {
             Collections.addAll(arrayListComboBox, var);
             main_text = maintext;
             return this;
         }
 
-        public CustomBuilder setPositiveButton(String name, final EventHandler<ActionEvent> listener) {
-            notify_config.mPositiveButtonText = name;
-            notify_config.mPositiveButtonListener = listener;
+        public Builder setPositiveButton(String name, final EventHandler<ActionEvent> listener) {
+            this.mPositiveButtonText = name;
+            this.positiveButtonListener = listener;
             return this;
         }
 
-        public CustomBuilder setNegativeButton(String name, final EventHandler<ActionEvent> listener) {
-            notify_config.mNegativeButtonText = name;
-            notify_config.mNegativeButtonListener = listener;
+        public Builder setNegativeButton(String name, final EventHandler<ActionEvent> listener) {
+            this.mNegativeButtonText = name;
+            this.negativeButtonListener = listener;
             return this;
         }
 
-        public void show() {
+        public String getValueComboBox() {
+            return pullBox.getValue();
+        }
+
+        public String getValueTextField() {
+            return newValueTextField;
+        }
+
+        public NewNotifyJava build() {
             Rectangle2D screenRect = Screen.getPrimary().getBounds();
 
-            build();
+            create_element();
+
+            Task<Object> task = new Task<Object>() {
+                @Override
+                protected Object call() throws Exception {
+                    Media sound = new Media(musicPathURL);
+                    MediaPlayer mediaPlayer = new MediaPlayer(sound);
+                    mediaPlayer.play();
+                    if (waitTime != Durability.NEVER) {
+                        if (waitTime == Durability.SHORT)
+                            Thread.sleep(5000);
+                        else if (waitTime == Durability.LONG)
+                            Thread.sleep(25000);
+                        closeAnim(changeTransition);
+                    }
+                    return null;
+                }
+            };
+
+            Thread th1 = new Thread(task);
+            th1.start();
+
+            StringProperty heigth = new SimpleStringProperty();
+            heigth.addListener((observable, oldValue, newValue) -> newValueTextField = newValue);
+            textField.textProperty().bindBidirectional(heigth);
+            content.addEventFilter(MouseEvent.MOUSE_ENTERED, MouseEvent -> popup.setOpacity(1));
+            content.addEventFilter(MouseEvent.MOUSE_EXITED, MouseEvent -> popup.setOpacity(this.backgroundOpacity));
+
+            Scene scene = new Scene(content);
+            scene.setFill(Color.TRANSPARENT);
+
+            popup.setScene(scene);
+            popup.setWidth(defWidth);
+            popup.setAlwaysOnTop(true);
+            popup.initOwner(primaryStage);
+            popup.initStyle(StageStyle.TRANSPARENT);
+            popup.setOpacity(this.backgroundOpacity);
+            popup.show();
 
             //height of the task bar
             JFrame jFrame = new JFrame();
@@ -206,8 +310,7 @@ public class NewNotifyJava {
             //отступ от края экрана
             double shift = 10;
 
-
-            switch (notify_config.pos) {
+            switch (this.pos) {
                 case LEFT_TOP:
                     popup.setX(shift);
                     popup.setY(shift);
@@ -218,74 +321,44 @@ public class NewNotifyJava {
                     break;
                 case LEFT_BOTTOM:
                     popup.setX(shift);
-                    popup.setY(screenRect.getHeight() - taskBarSize - shift);
+                    popup.setY(screenRect.getHeight() - taskBarSize - shift - content.getHeight());
                     break;
                 case RIGHT_BOTTOM:
                     popup.setX(screenRect.getWidth() - defWidth - shift);
-                    popup.setY(screenRect.getHeight() - taskBarSize - shift - 300);
+                    popup.setY(screenRect.getHeight() - taskBarSize - shift - content.getHeight());
                     break;
             }
 
-
-            Task<Object> task = new Task<>() {
-                @Override
-                protected Object call() throws Exception {
-                    System.out.println("111111111");
-                    System.out.println("2222222");
-                    if (notify_config.waitTime != Durability.NEVER) {
-                        if (notify_config.waitTime == Durability.SHORT)
-                            Thread.sleep(5000);
-                        else if (notify_config.waitTime == Durability.LONG)
-                            Thread.sleep(25000);
-                        closeAnim(notify_config.changeTransition);
-                    }
-                    return null;
-                }
-            };
-            Thread th1 = new Thread(task);
-            th1.start();
-
-            content_actions.addEventFilter(MouseEvent.MOUSE_PRESSED, MouseEvent -> closeAnim(notify_config.changeTransition));
-            content.addEventFilter(MouseEvent.MOUSE_ENTERED, MouseEvent -> popup.setOpacity(1));
-            content.addEventFilter(MouseEvent.MOUSE_EXITED, MouseEvent -> popup.setOpacity(notify_config.backgroundOpacity));
-
-            Scene scene = new Scene(content);
-            scene.setFill(Color.TRANSPARENT);
-
-            popup.setScene(scene);
-            popup.setWidth(defWidth);
-            popup.setAlwaysOnTop(true);
-            popup.initOwner(primaryStage);
-            popup.initStyle(StageStyle.TRANSPARENT);
-            popup.setOpacity(notify_config.backgroundOpacity);
-            popup.show();
-            openAnim(notify_config.changeTransition);
+            openAnim(this.changeTransition);
+            return new NewNotifyJava(this);
         }
 
-        private void build() {
-            content.setStyle("-fx-background-color:" + notify_config.backgroundColor);
-            content.setPrefSize(0, 0);
-            content.setPadding(new Insets(5.0, 5.0, 5.0, 5.0));
-            content_visual.setPadding(new Insets(5.0, 5.0, 5.0, 5.0));
+        private void create_element() {
+            content.setStyle("-fx-background-color:" + this.backgroundColor);
+            content.setPadding(new Insets(5));
+            content_visual.setPadding(new Insets(5));
             content_visual.setSpacing(10.0);
 
             ImageAdd();
             LabelAdd();
 
-            textFieldAdd();
+            content_input.setSpacing(10);
+            content_input.setPadding(new Insets(5));
+            if (addInputTextBox)
+                textFieldAdd();
             if (!arrayListComboBox.isEmpty())
                 comboBox();
-
+            content.getChildren().add(content_input);
             ButtonAdd();
         }
 
         private void ImageAdd() {
-            String path = notify_config.iconPathURL;
+            String path = this.iconPathURL;
 
-            if (!notify_config.iconPathURL.isEmpty()) {
-                if (!notify_config.iconPathURL.startsWith("http")) {
+            if (!this.iconPathURL.isEmpty()) {
+                if (!this.iconPathURL.startsWith("http")) {
                     try {
-                        path = new File(notify_config.iconPathURL).toURI().toURL().toString();
+                        path = new File(this.iconPathURL).toURI().toURL().toString();
                     } catch (MalformedURLException e) {
                         e.printStackTrace();
                     }
@@ -294,7 +367,7 @@ public class NewNotifyJava {
                 Rectangle iconBorderRectangle;
                 Image backgroundImage = new Image(path);
 
-                if (notify_config.iconBorder == Border.CIRCLE) {
+                if (this.iconBorder == Border.CIRCLE) {
                     iconBorderCircle = new Circle(50, 50, 25);
                     iconBorderCircle.setFill(new ImagePattern(backgroundImage, 1, 1, 1, 1, true));
                     content_visual.getChildren().add(iconBorderCircle);
@@ -307,84 +380,76 @@ public class NewNotifyJava {
         }
 
         private void LabelAdd() {
-            if (notify_config.title != null) {
-                Label title = new Label(notify_config.title);
+            if (this.title != null) {
+                Label title = new Label(this.title);
                 title.setFont(Font.font(24));
-                title.setStyle("-fx-font-weight: bold; -fx-text-fill:" + notify_config.textColorTitle);
+                title.setStyle("-fx-font-weight: bold; -fx-text-fill:" + this.textColorTitle);
                 msgLayout.getChildren().add(title);
             }
-            if (notify_config.message != null) {
-                Label message = new Label(notify_config.message);
+            if (this.message != null) {
+                Label message = new Label(this.message);
+                message.setMaxWidth(defWidth - 100);
+                message.setWrapText(true);
                 message.setFont(Font.font(20));
-                message.setStyle("-fx-text-fill:" + notify_config.textColorMessage);
+                message.setStyle("-fx-text-fill:" + this.textColorMessage);
                 msgLayout.getChildren().add(message);
             }
-            if (notify_config.appName != null) {
-                Label app = new Label(notify_config.appName + notify_config.attributiontext);
+            if (this.appName != null) {
+                Label app = new Label(this.appName + this.attributiontext);
                 app.setFont(Font.font(14));
-                app.setStyle("-fx-text-fill:" + notify_config.textColorMessage);
+                app.setStyle("-fx-text-fill:" + this.textColorMessage);
                 msgLayout.getChildren().add(app);
             }
             content_visual.getChildren().add(msgLayout);
             content.getChildren().add(content_visual);
         }
 
-
         private void textFieldAdd() {
-            if (notify_config.typeText_TextInput.equals("pswd")) {
-                PasswordField textPassword = new PasswordField();
-                textPassword.setPadding(new Insets(5, 5, 5, 5));
-                textPassword.setAccessibleText(notify_config.backgroundText_TextInput);
-                content.getChildren().add(textPassword);
-            } else {
-                TextField textField = new TextField();
-                textField.setColumns(11);
-            }
-
+            content_input.getChildren().add(textField);
         }
 
         private void comboBox() {
-            VBox temp = new VBox();
-            if (main_text == null)
-                main_text = arrayListComboBox.get(0);
-            final ComboBox<String> pullBox = new ComboBox<>();
+
             pullBox.getItems().addAll(arrayListComboBox);
+            new AutoCompleteComboBoxListener<>(pullBox);
+            pullBox.setValue(main_text);
             pullBox.setVisibleRowCount(5);
             pullBox.setValue(main_text); // устанавливаем выбранный элемент по умолчанию
             pullBox.setPrefWidth(defWidth);
             pullBox.setStyle("-fx-font-weight: bold; -fx-background-color: #ffffff; -fx-text-fill: #000000");
             pullBox.setPadding(new Insets(0, 5, 0, 5));
-            new AutoCompleteComboBoxListener(pullBox);
-            content.getChildren().addAll(pullBox);
+            content_input.getChildren().addAll(pullBox);
         }
 
         private void ButtonAdd() {
             content_actions.setPrefWidth(defWidth);
             content_actions.setSpacing(10.0);
-            content_actions.setPadding(new Insets(5, 5, 10, 5));
+            content_actions.setPadding(new Insets(5));
 
-            if (notify_config.mPositiveButtonListener != null) {
-                Button mPositiveButton = new Button(notify_config.mPositiveButtonText);
+            if (this.positiveButtonListener != null) {
+                Button mPositiveButton = new Button(this.mPositiveButtonText);
                 mPositiveButton.setPrefWidth(content_actions.getPrefWidth());
                 mPositiveButton.setStyle("-fx-font-weight: bold; -fx-background-color: #626262; -fx-text-fill: white");
-                mPositiveButton.setOnAction(notify_config.mPositiveButtonListener);
+                mPositiveButton.setOnAction(this.positiveButtonListener);
+                mPositiveButton.addEventFilter(MouseEvent.MOUSE_PRESSED, MouseEvent -> closeAnim(changeTransition));
                 content_actions.getChildren().add(mPositiveButton);
             }
 
-            if (notify_config.mNegativeButtonListener != null) {
-                Button mNegativeButton = new Button(notify_config.mNegativeButtonText);
+            if (this.negativeButtonListener != null) {
+                Button mNegativeButton = new Button(this.mNegativeButtonText);
                 mNegativeButton.setPrefWidth(content_actions.getPrefWidth());
                 mNegativeButton.setStyle("-fx-font-weight: bold; -fx-background-color: #626262; -fx-text-fill: white");
-                mNegativeButton.setOnAction(notify_config.mNegativeButtonListener);
+                mNegativeButton.setOnAction(this.negativeButtonListener);
+                mNegativeButton.addEventFilter(MouseEvent.MOUSE_PRESSED, MouseEvent -> closeAnim(changeTransition));
                 content_actions.getChildren().add(mNegativeButton);
             }
             content.getChildren().add(content_actions);
         }
 
-        private void openAnim(boolean transition) {
-            if (transition) {
+        private void openAnim(Animation transition) {
+            if (transition == Animation.TRANSPARENT) {
                 TranslateTransition tt = new TranslateTransition(Duration.millis(600), content);
-                if (notify_config.pos == Position.RIGHT_BOTTOM || notify_config.pos == Position.RIGHT_TOP) {
+                if (this.pos == Position.RIGHT_BOTTOM || this.pos == Position.RIGHT_TOP) {
                     tt.setByX(-defWidth);
                     tt.setFromX(defWidth);
                 } else {
@@ -401,14 +466,13 @@ public class NewNotifyJava {
 
         }
 
-        private void closeAnim(boolean transition) {
-            if (transition) {
+        private void closeAnim(Animation transition) {
+            if (transition == Animation.TRANSPARENT) {
                 TranslateTransition tt = new TranslateTransition(Duration.millis(600), content);
-                if (notify_config.pos == Position.RIGHT_BOTTOM || notify_config.pos == Position.RIGHT_TOP) {
+                if (this.pos == Position.RIGHT_BOTTOM || this.pos == Position.RIGHT_TOP) {
                     tt.setByX(defWidth);
                 } else {
                     tt.setByX(-defWidth);
-
                 }
                 tt.setOnFinished(event -> {
                     System.out.println("close");
@@ -417,7 +481,7 @@ public class NewNotifyJava {
                 tt.play();
             } else {
                 FadeTransition ft = new FadeTransition(Duration.millis(600), content);
-                ft.setFromValue(notify_config.backgroundOpacity);
+                ft.setFromValue(this.backgroundOpacity);
                 ft.setToValue(0);
                 ft.setCycleCount(1);
                 ft.setOnFinished(event -> {
@@ -426,25 +490,23 @@ public class NewNotifyJava {
                 });
                 ft.play();
             }
-
         }
 
-        public static class AutoCompleteComboBoxListener implements EventHandler<KeyEvent> {
+        private static class AutoCompleteComboBoxListener<T> implements EventHandler<KeyEvent> {
 
             private final ComboBox comboBox;
-            private final ObservableList<String> data;
+
+            private final ObservableList<T> data;
             private boolean moveCaretToPos = false;
             private int caretPos;
 
-            public AutoCompleteComboBoxListener(final ComboBox<String> comboBox) {
+            public AutoCompleteComboBoxListener(final ComboBox comboBox) {
                 this.comboBox = comboBox;
-                StringBuilder sb = new StringBuilder();
                 data = comboBox.getItems();
 
                 this.comboBox.setEditable(true);
                 this.comboBox.setOnKeyPressed(t -> comboBox.hide());
                 this.comboBox.setOnKeyReleased(AutoCompleteComboBoxListener.this);
-                comboBox.getEditor().setStyle("-fx-font-weight: bold; -fx-background-color: #ffffff; -fx-text-fill: #000000");
             }
 
             @Override
@@ -475,8 +537,8 @@ public class NewNotifyJava {
                     return;
                 }
 
-                ObservableList list = FXCollections.observableArrayList();
-                for (Object datum : data) {
+                ObservableList<T> list = FXCollections.observableArrayList();
+                for (T datum : data) {
                     if (datum.toString().toLowerCase().startsWith(
                             AutoCompleteComboBoxListener.this.comboBox
                                     .getEditor().getText().toLowerCase())) {
