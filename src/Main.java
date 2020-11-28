@@ -20,6 +20,7 @@ public class Main extends Application {
                 .waitTime(NewNotifyJava.Durability.NEVER)
                 .backgroundOpacity(1)
                 .addInputTextBox()
+
                 .setComboBox("second", "first", "second", "third", "four", "five", "six")
                 .setPositiveButton("AGREE", event -> {
                     System.out.println(notifyJava.getValueTextField());
@@ -27,7 +28,7 @@ public class Main extends Application {
                 })
                 .setNegativeButton("CANCEL", event -> System.out.println("negative"))
                 .iconPathURL("https://softboxmarket.com/images/thumbnails/618/540/detailed/3/official-bts-wings-2nd-album-cd-poster-po_00.jpg")
-                .changeTransition(NewNotifyJava.Animation.TRANSPARENT)
+                .changeTransition(NewNotifyJava.Animation.DISPLAY)
                 .build();
 
     }

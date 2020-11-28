@@ -32,7 +32,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -304,28 +303,30 @@ public class NewNotifyJava {
             popup.show();
 
             //height of the task bar
-            JFrame jFrame = new JFrame();
-            java.awt.Insets scnMax = Toolkit.getDefaultToolkit().getScreenInsets(jFrame.getGraphicsConfiguration());
-            int taskBarSize = scnMax.bottom;
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice defaultScreenDevice = ge.getDefaultScreenDevice();
+            GraphicsConfiguration defaultConfiguration = defaultScreenDevice.getDefaultConfiguration();
+            java.awt.Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(defaultConfiguration);
+
             //отступ от края экрана
             double shift = 10;
 
             switch (this.pos) {
                 case LEFT_TOP:
-                    popup.setX(shift);
-                    popup.setY(shift);
+                    popup.setX(shift + screenInsets.left);
+                    popup.setY(shift + screenInsets.top);
                     break;
                 case RIGHT_TOP:
-                    popup.setX(screenRect.getWidth() - defWidth - shift);
-                    popup.setY(shift);
+                    popup.setX(screenRect.getWidth() - defWidth - shift - screenInsets.right);
+                    popup.setY(shift + screenInsets.top);
                     break;
                 case LEFT_BOTTOM:
-                    popup.setX(shift);
-                    popup.setY(screenRect.getHeight() - taskBarSize - shift - content.getHeight());
+                    popup.setX(shift + screenInsets.left);
+                    popup.setY(screenRect.getHeight() - screenInsets.bottom - shift - content.getHeight());
                     break;
                 case RIGHT_BOTTOM:
-                    popup.setX(screenRect.getWidth() - defWidth - shift);
-                    popup.setY(screenRect.getHeight() - taskBarSize - shift - content.getHeight());
+                    popup.setX(screenRect.getWidth() - defWidth - shift - shift - screenInsets.right);
+                    popup.setY(screenRect.getHeight() - screenInsets.bottom - shift - content.getHeight());
                     break;
             }
 
