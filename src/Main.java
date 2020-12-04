@@ -12,7 +12,10 @@ public class Main extends Application {
         NewNotifyJava.Builder notifyJava = new NewNotifyJava.Builder(primaryStage);
 
         notifyJava.title("Jane")
-                .message("Doe")
+                .message("Привет ")
+                .messageLink("всем ", event -> System.out.println("111111111111"))
+                .message("тут демонстрация")
+                .messageLink("ссылок ", event -> System.out.println("222222222222"))
                 .appName("test")
                 .addAttributionText("Vue SMS")
                 .iconBorder(NewNotifyJava.Border.CIRCLE)

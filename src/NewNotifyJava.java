@@ -11,9 +11,9 @@ import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -142,7 +142,9 @@ public class NewNotifyJava {
         private String newValueTextField;
         private Position pos = Position.RIGHT_BOTTOM;
         private String title;
-        private String message;
+        private String message = "";
+        private String messageLink = "";
+        private EventHandler<ActionEvent> messageLinkListener;
         private String appName;
         private String attributiontext;
         private Border iconBorder = Border.CIRCLE;
@@ -170,7 +172,13 @@ public class NewNotifyJava {
         }
 
         public Builder message(String message) {
-            this.message = message;
+            this.message += message;
+            return this;
+        }
+
+        public Builder messageLink(String messageLink, final EventHandler<ActionEvent> listener) {
+            this.messageLink = messageLink;
+            this.messageLinkListener = listener;
             return this;
         }
 
@@ -394,6 +402,11 @@ public class NewNotifyJava {
                 message.setFont(Font.font(20));
                 message.setStyle("-fx-text-fill:" + this.textColorMessage);
                 msgLayout.getChildren().add(message);
+            }
+            if (this.messageLink != null) {
+                Hyperlink hyperlink = new Hyperlink(messageLink);
+                hyperlink.setOnAction(messageLinkListener);
+                msgLayout.getChildren().add(hyperlink);
             }
             if (this.appName != null) {
                 Label app = new Label(this.appName + this.attributiontext);
