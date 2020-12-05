@@ -13,9 +13,9 @@ public class Main extends Application {
 
         notifyJava.title("Jane")
                 .message("Привет ")
-                .messageLink("всем ", event -> System.out.println("111111111111"))
+                .messageLinkBrowser("всем ", "http://developer.alexanderklimov.ru/android/java/arraylist.php")
                 .message("тут демонстрация")
-                .messageLink("ссылок ", event -> System.out.println("222222222222"))
+                .messageLinkBrowser("ссылок ", "https://www.google.com/search?q=rfr+cltkfnm+arraylist+%D0%BD%D0%B5%D1%81%D0%BA%D0%BE%D0%BB%D1%8C%D0%BA%D0%B8%D1%85+%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D1%85&oq=rfr+cltkfnm+arraylist+%D0%BD%D0%B5%D1%81%D0%BA%D0%BE%D0%BB%D1%8C%D0%BA%D0%B8%D1%85+%D0%BF%D0%B5%D1%80%D0%B5%D0%BC%D0%B5%D0%BD%D0%BD%D1%8B%D1%85&aqs=chrome..69i57.15534j0j7&sourceid=chrome&ie=UTF-8")
                 .appName("test")
                 .addAttributionText("Vue SMS")
                 .iconBorder(NewNotifyJava.Border.CIRCLE)
@@ -33,6 +33,6 @@ public class Main extends Application {
                 .iconPathURL("https://softboxmarket.com/images/thumbnails/618/540/detailed/3/official-bts-wings-2nd-album-cd-poster-po_00.jpg")
                 .changeTransition(NewNotifyJava.Animation.DISPLAY)
                 .build();
-
+        
     }
 }

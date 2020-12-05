@@ -34,7 +34,10 @@ import javafx.util.Duration;
 
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -125,6 +128,7 @@ public class NewNotifyJava {
 
     public static class Builder {
         private static final ArrayList<String> arrayListComboBox = new ArrayList<>();
+        private static final ArrayList<String[]> arrayListmessageLinkBrowser = new ArrayList<>();
         final ComboBox<String> pullBox = new ComboBox<>();
         private final Stage popup = new Stage();
         private final Stage primaryStage;
@@ -143,8 +147,6 @@ public class NewNotifyJava {
         private Position pos = Position.RIGHT_BOTTOM;
         private String title;
         private String message = "";
-        private String messageLink = "";
-        private EventHandler<ActionEvent> messageLinkListener;
         private String appName;
         private String attributiontext;
         private Border iconBorder = Border.CIRCLE;
@@ -176,9 +178,8 @@ public class NewNotifyJava {
             return this;
         }
 
-        public Builder messageLink(String messageLink, final EventHandler<ActionEvent> listener) {
-            this.messageLink = messageLink;
-            this.messageLinkListener = listener;
+        public Builder messageLinkBrowser(String messageLinkBrowserName, String messageLinkBrowser) {
+            arrayListmessageLinkBrowser.add(new String[]{messageLinkBrowserName, messageLinkBrowser});
             return this;
         }
 
@@ -403,11 +404,37 @@ public class NewNotifyJava {
                 message.setStyle("-fx-text-fill:" + this.textColorMessage);
                 msgLayout.getChildren().add(message);
             }
-            if (this.messageLink != null) {
-                Hyperlink hyperlink = new Hyperlink(messageLink);
-                hyperlink.setOnAction(messageLinkListener);
-                msgLayout.getChildren().add(hyperlink);
+
+            if (arrayListmessageLinkBrowser.size() != 0) {
+                Desktop desktop;
+                try {
+                    desktop = Desktop.getDesktop();
+                } catch (Exception ex) {
+                    System.err.println("Класс Desktop не поддерживается.");
+                    return;
+                }
+                if (!desktop.isSupported(Desktop.Action.BROWSE)) {
+                    System.err.println("BROWSE: операция не поддерживается..");
+                    return;
+                }
+                for (int i = 0; i < arrayListmessageLinkBrowser.size(); i++) {
+                    Hyperlink hyperlink = new Hyperlink(arrayListmessageLinkBrowser.get(i)[0]);
+                    int finalI = i;
+                    hyperlink.setOnAction(event -> {
+                        try {
+                            desktop.browse(new URL(arrayListmessageLinkBrowser.get(finalI)[1]).toURI());
+                        } catch (URISyntaxException e) {
+                            e.printStackTrace();
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    msgLayout.getChildren().add(hyperlink);
+                }
             }
+
             if (this.appName != null) {
                 Label app = new Label(this.appName + this.attributiontext);
                 app.setFont(Font.font(14));
