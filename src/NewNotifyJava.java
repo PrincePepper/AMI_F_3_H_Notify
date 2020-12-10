@@ -41,67 +41,36 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * The HelloWorld program implements an application that
+ * simply displays "Hello World!" to the standard output.
+ *
+ * @author Semen Sereda
+ * @version 1.0
+ * @since 2020-12-10
+ */
 public class NewNotifyJava {
+    /**
+     * These difine variables define the most important parameters
+     *
+     * @param length_notification_window This parameter is responsible for the size of the dialog box by width
+     * (the height is calculated automatically)
+     * @param link_notification_sound  This parameter is a reference to the sound that will be played when
+     * the window is opened
+     * @param title_font_size This parameter is responsible for the font of the title
+     * @param message_font_size This parameter is responsible for the font of the message
+     * @param application_font_size This parameter is responsible for the font of the app name
+     * @param offset_edge_notification This parameter is responsible for the indent from the screen
+     * (it is responsible for the indent from all sides in the same way). You don't need to take into account
+     * the taskbar indent, it is calculated automatically
+     */
 
-    private final String title;
-    private final String message;
-    private final String appName;
-    private final String attributiontext;
-    private final String iconPathURL;
-    private final String textColorTitle;
-    private final String textColorMessage;
-    private final String backgroundColor;
-    private final double backgroundOpacity;
-    private final String musicPathURL;
-
-    public NewNotifyJava(Builder builder) {
-        this.title = builder.title;
-        this.message = builder.message;
-        this.appName = builder.appName;
-        this.attributiontext = builder.attributiontext;
-        this.iconPathURL = builder.iconPathURL;
-        this.textColorTitle = builder.textColorTitle;
-        this.textColorMessage = builder.textColorMessage;
-        this.backgroundColor = builder.backgroundColor;
-        this.backgroundOpacity = builder.backgroundOpacity;
-        this.musicPathURL = builder.musicPathURL;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public String getAttributiontext() {
-        return attributiontext;
-    }
-
-    public String getIconPathURL() {
-        return iconPathURL;
-    }
-
-    public String getTextColorTitle() {
-        return textColorTitle;
-    }
-
-    public String getTextColorMessage() {
-        return textColorMessage;
-    }
-
-    public String getBackgroundColor() {
-        return backgroundColor;
-    }
-
-    public double getBackgroundOpacity() {
-        return backgroundOpacity;
-    }
+    private static final int length_notification_window = 350;
+    private static final String link_notification_sound = "https://wav-library.net/sounds/0-0-1-17216-20";
+    private static final int title_font_size = 24;
+    private static final int message_font_size = 20;
+    private static final int application_font_size = 14;
+    private static final int offset_edge_notification = 10;
 
     public enum Position {
         RIGHT_BOTTOM,
@@ -138,9 +107,9 @@ public class NewNotifyJava {
         private final VBox content_input = new VBox();
         private final HBox content_actions = new HBox();
 
-        private final double defWidth = 350;
+        private final double defWidth = length_notification_window;
 
-        private final String musicPathURL = "https://wav-library.net/sounds/0-0-1-17216-20";
+        private final String musicPathURL = link_notification_sound;
 
         TextField textField = new TextField();
         private String newValueTextField;
@@ -163,6 +132,8 @@ public class NewNotifyJava {
         private EventHandler<ActionEvent> positiveButtonListener;
         private EventHandler<ActionEvent> negativeButtonListener;
         private String main_text;
+
+        private Button mPositiveButton;
 
         public Builder(Stage primaryStage) {
             this.primaryStage = primaryStage;
@@ -269,7 +240,16 @@ public class NewNotifyJava {
             return newValueTextField;
         }
 
-        public NewNotifyJava build() {
+        public Builder closeOnClick() {
+            content.addEventFilter(MouseEvent.MOUSE_PRESSED, MouseEvent -> {
+                if (this.positiveButtonListener != null)
+                    mPositiveButton.getOnAction().handle(new ActionEvent());
+                closeAnim(changeTransition);
+            });
+            return this;
+        }
+
+        public void build() {
             Rectangle2D screenRect = Screen.getPrimary().getBounds();
 
             create_element();
@@ -318,7 +298,7 @@ public class NewNotifyJava {
             java.awt.Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(defaultConfiguration);
 
             //отступ от края экрана
-            double shift = 10;
+            double shift = offset_edge_notification;
 
             switch (this.pos) {
                 case LEFT_TOP:
@@ -340,7 +320,6 @@ public class NewNotifyJava {
             }
 
             openAnim(this.changeTransition);
-            return new NewNotifyJava(this);
         }
 
         private void create_element() {
@@ -392,7 +371,7 @@ public class NewNotifyJava {
         private void LabelAdd() {
             if (this.title != null) {
                 Label title = new Label(this.title);
-                title.setFont(Font.font(24));
+                title.setFont(Font.font(title_font_size));
                 title.setStyle("-fx-font-weight: bold; -fx-text-fill:" + this.textColorTitle);
                 msgLayout.getChildren().add(title);
             }
@@ -400,7 +379,7 @@ public class NewNotifyJava {
                 Label message = new Label(this.message);
                 message.setMaxWidth(defWidth - 100);
                 message.setWrapText(true);
-                message.setFont(Font.font(20));
+                message.setFont(Font.font(message_font_size));
                 message.setStyle("-fx-text-fill:" + this.textColorMessage);
                 msgLayout.getChildren().add(message);
             }
@@ -423,11 +402,7 @@ public class NewNotifyJava {
                     hyperlink.setOnAction(event -> {
                         try {
                             desktop.browse(new URL(arrayListmessageLinkBrowser.get(finalI)[1]).toURI());
-                        } catch (URISyntaxException e) {
-                            e.printStackTrace();
-                        } catch (MalformedURLException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
+                        } catch (URISyntaxException | IOException e) {
                             e.printStackTrace();
                         }
                     });
@@ -437,7 +412,7 @@ public class NewNotifyJava {
 
             if (this.appName != null) {
                 Label app = new Label(this.appName + this.attributiontext);
-                app.setFont(Font.font(14));
+                app.setFont(Font.font(application_font_size));
                 app.setStyle("-fx-text-fill:" + this.textColorMessage);
                 msgLayout.getChildren().add(app);
             }
@@ -450,7 +425,6 @@ public class NewNotifyJava {
         }
 
         private void comboBox() {
-
             pullBox.getItems().addAll(arrayListComboBox);
             new AutoCompleteComboBoxListener<>(pullBox);
             pullBox.setValue(main_text);
@@ -468,7 +442,7 @@ public class NewNotifyJava {
             content_actions.setPadding(new Insets(5));
 
             if (this.positiveButtonListener != null) {
-                Button mPositiveButton = new Button(this.mPositiveButtonText);
+                mPositiveButton = new Button(this.mPositiveButtonText);
                 mPositiveButton.setPrefWidth(content_actions.getPrefWidth());
                 mPositiveButton.setStyle("-fx-font-weight: bold; -fx-background-color: #626262; -fx-text-fill: white");
                 mPositiveButton.setOnAction(this.positiveButtonListener);
@@ -607,7 +581,6 @@ public class NewNotifyJava {
                 }
                 moveCaretToPos = false;
             }
-
         }
     }
 }
