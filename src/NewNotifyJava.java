@@ -65,7 +65,7 @@ public class NewNotifyJava {
      * the taskbar indent, it is calculated automatically
      */
 
-    private static final int length_notification_window = 350;
+    private static final int length_notification_window = 400;
     private static final String link_notification_sound = "https://wav-library.net/sounds/0-0-1-17216-20";
     private static final int title_font_size = 24;
     private static final int message_font_size = 20;
